@@ -2,42 +2,50 @@ package websockets;
 
 import org.eclipse.jetty.websocket.api.*;
 import org.eclipse.jetty.websocket.api.annotations.*;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
 
+
 @WebSocket
-public class SocketHandler {
+public class SocketHandler extends Observable{
 
 	static SocketHandler instance;
-
 	static Session session;
 	
 	public SocketHandler(){
-		instance = this;
-	}
-	
-	//On the first connection, this runs. Sets the session so that I can access the web socket
-	@OnWebSocketConnect
-	public void onConnect(Session session) throws Exception {
-		System.out.println("Client connected.\n");
-		this.session = session;
+		instance = this;		
 	}
 
-	//when it closes
+	@OnWebSocketConnect
+	public void onConnect(Session session) throws Exception {
+		this.session = session;
+		Gson gson = new Gson();
+		JsonObject json = new JsonObject();
+		json.addProperty("response", "connected");
+		String jsonOutput = gson.toJson(json);
+		
+		this.setChanged();
+		this.notifyObservers(jsonOutput);
+	}
+
 	@OnWebSocketClose
 	public void closed(Session session, int statusCode, String reason){
 		this.session = null;
 	}
-	
-	//When we receive a message client --> server
+
 	@OnWebSocketMessage
 	public void message(Session session, String message) throws IOException {
-		System.out.println("Client --> Server: " + message); //print message
-		session.getRemote().sendString(message); //send it back
+		System.out.println("Client --> Server: " + message);
+		
+		this.setChanged();
+		this.notifyObservers(message);
 	}
-	
-	//Sending a message Server --> Client
+
 	public void sendMessage(String message) throws IOException {
 		if(session != null){
 			this.session.getRemote().sendString(message);
