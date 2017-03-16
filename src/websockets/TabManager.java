@@ -9,6 +9,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -24,8 +28,10 @@ import com.google.gson.JsonParser;
  * @author Gerry Fletcher @ gerryfletcher.me
  *
  */
-public class TabManager implements Observer {
+public class TabManager implements Observer{
 
+	private boolean serverOnline = false;
+	
 	private List<Tab> tabList = new ArrayList<>();
 	private Tab activeTab = null;
 	
@@ -87,24 +93,67 @@ public class TabManager implements Observer {
 		}
 		
 	}
+	
+	/**
+	 * New Tab Map to handle WebSocket:newTab response objects
+	 */
+	Map<String, CompletableFuture<Tab>> futureNewTabs = new ConcurrentHashMap<>();
 
 	/**
 	 * Creates a new tab with a String URL.
 	 * <p>This method will create a new tab with optional parameters:
 	 * URL
 	 * @param url A string URL.
+	 * 
+	 * TODO: CREATE EMPTY OBJECT
+	 * TODO: ASSIGN IDENTIFIER
+	 * TODO: PASS IDENTIFIER IN JSON MESSAGE
+	 * @return 
 	 */
-	public void newTab(String url) {
-		JsonObject json = new JsonObject();
-		json.addProperty("request", "newTab");
-		json.addProperty("url", url);
-		String jsonOutput = gson.toJson(json);
-		sendMessage(jsonOutput);
+	public Tab newTab(String url) {
+		if(serverOnline){
+			final String requestId = UUID.randomUUID().toString(); //create a unique ID for the object
+			
+			JsonObject json = new JsonObject();
+			//form JSON
+			json.addProperty("request", "newTab");
+			json.addProperty("requestId", requestId);
+			json.addProperty("url", url);
+			
+			String jsonOutput = gson.toJson(json);
+			sendMessage(jsonOutput);
+			
+			CompletableFuture<Tab> futureTab = new CompletableFuture<>();
+			futureNewTabs.put(requestId,  futureTab);
+			try {
+				return futureTab.get();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ExecutionException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		return null;
+		
 	}
 	
-	private void newTab(Object response) {
+	/**
+	 * TODO: CHECK RESPONSE IDENTIFIER
+	 * TODO: ASSIGN TAB DATA TO OBJECT
+	 * @param response
+	 */
+	
+	private void newTab(Object response){
 		JsonObject stringResponse = gson.fromJson(response.toString(), JsonObject.class);
 		String created = stringResponse.get("created").getAsString();
+		String requestId = stringResponse.get("requestId").getAsString();
+		String tabData = stringResponse.get("tabData").getAsString();
+		
+		Tab tab = gson.fromJson(tabData, Tab.class);
+		futureNewTabs.get(requestId).complete(tab);
 	}
 	
 	
@@ -131,6 +180,7 @@ public class TabManager implements Observer {
 		
 		if(response.equals("connected")){
 			System.out.println("\nThe CRX has connected.\n");
+			this.serverOnline = true;
 			getAllInWindow();
 		} else if(response.equals("getAllInWindow")){
 			getAllInWindow(msg);
