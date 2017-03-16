@@ -14,6 +14,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
+import javax.swing.plaf.TabbedPaneUI;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -41,6 +43,8 @@ public class TabManager implements Observer{
 	TabManager(){ //constructor without options
 		port(100); //set port to default: 100
 		startSocketServer();
+		
+		
 	}
 	
 	/** Constructor with <i>Tab Options</i>, like port number or JSON formatting. TODO: this */
@@ -150,8 +154,7 @@ public class TabManager implements Observer{
 		JsonObject stringResponse = gson.fromJson(response.toString(), JsonObject.class);
 		String created = stringResponse.get("created").getAsString();
 		String requestId = stringResponse.get("requestId").getAsString();
-		String tabData = stringResponse.get("tabData").getAsString();
-		
+		JsonElement tabData = stringResponse.get("tabData");
 		Tab tab = gson.fromJson(tabData, Tab.class);
 		futureNewTabs.get(requestId).complete(tab);
 	}
