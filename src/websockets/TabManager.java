@@ -11,6 +11,8 @@ import java.util.Observable;
 import java.util.Observer;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -23,10 +25,11 @@ import com.google.gson.JsonParser;
  *
  */
 public class TabManager implements Observer {
-	
-	private Map<Tab, Integer> tabMap = new HashMap<>();
+
 	private List<Tab> tabList = new ArrayList<>();
 	private Tab activeTab = null;
+	
+	private Gson gson = new Gson();
 
 	/** Constructor sets default port to 100, and calls startSocketServer() */
 	TabManager(){ //constructor without options
@@ -61,7 +64,6 @@ public class TabManager implements Observer {
 	 * response included.
 	 */
 	private void getAllInWindow() {
-		Gson gson = new Gson();
 		JsonObject json = new JsonObject();
 		json.addProperty("request", "getAllInWindow");
 		String jsonOutput = gson.toJson(json);
@@ -74,10 +76,38 @@ public class TabManager implements Observer {
 	 * a Tab object.
 	 * @param msg	JSON formatted data
 	 */
-	private void getAllInWindow(Object msg){
+	private void getAllInWindow(Object response){
+		JsonObject stringResponse = gson.fromJson(response.toString(), JsonObject.class);
+		
+		JsonArray tabsArray = stringResponse.get("tabData").getAsJsonArray();
+		
+		for(final JsonElement tabData : tabsArray){
+			Tab tab = gson.fromJson(tabData, Tab.class);
+			System.out.println(tab.getIndex() + " : " + tab.getUrl());
+		}
 		
 	}
 
+	/**
+	 * Creates a new tab with a String URL.
+	 * <p>This method will create a new tab with optional parameters:
+	 * URL
+	 * @param url A string URL.
+	 */
+	public void newTab(String url) {
+		JsonObject json = new JsonObject();
+		json.addProperty("request", "newTab");
+		json.addProperty("url", url);
+		String jsonOutput = gson.toJson(json);
+		sendMessage(jsonOutput);
+	}
+	
+	private void newTab(Object response) {
+		JsonObject stringResponse = gson.fromJson(response.toString(), JsonObject.class);
+		String created = stringResponse.get("created").getAsString();
+	}
+	
+	
 	/**
 	 * Takes a String and sends it to the WebSocket.
 	 * @param message	a <b>JSON formatted String</b> with instructions for CRX.
@@ -92,20 +122,11 @@ public class TabManager implements Observer {
 	}
 
 	/**
-	 * TODO: Create this method.
-	 * <p>This method will create a new tab with optional parameters:
-	 * URL
-	 */
-	public void newTab() {
-		
-	}
-
-	/**
 	 * This method is called when SocketHandler has activity, passing what activity there is.
 	 * @param msg	a String or JSON formatted 
 	 */
 	@Override
-	public void update(Observable o, Object msg) {		
+	public void update(Observable o, Object msg) {	
 		String response = getJSONResponse(msg);
 		
 		if(response.equals("connected")){
@@ -113,6 +134,8 @@ public class TabManager implements Observer {
 			getAllInWindow();
 		} else if(response.equals("getAllInWindow")){
 			getAllInWindow(msg);
+		} else if(response.equals("newTab")){
+			newTab(msg);
 		}
 	}
 
