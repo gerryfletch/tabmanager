@@ -17,6 +17,8 @@ public class SocketHandler extends Observable{
 	static SocketHandler instance;
 	static Session session;
 	
+	private Gson gson = new Gson();
+	
 	public SocketHandler(){
 		instance = this;		
 	}
@@ -24,11 +26,9 @@ public class SocketHandler extends Observable{
 	@OnWebSocketConnect
 	public void onConnect(Session session) throws Exception {
 		this.session = session;
-		Gson gson = new Gson();
 		JsonObject json = new JsonObject();
 		json.addProperty("response", "connected");
 		String jsonOutput = gson.toJson(json);
-		
 		this.setChanged();
 		this.notifyObservers(jsonOutput);
 	}
@@ -36,12 +36,13 @@ public class SocketHandler extends Observable{
 	@OnWebSocketClose
 	public void closed(Session session, int statusCode, String reason){
 		this.session = null;
+		System.out.println("The WebSocket server has closed. This can cause "
+				+ "unpredicted problems if it was unintentional.");
 	}
 
 	@OnWebSocketMessage
 	public void message(Session session, String message) throws IOException {
 		System.out.println("Client --> Server: " + message);
-		
 		this.setChanged();
 		this.notifyObservers(message);
 	}

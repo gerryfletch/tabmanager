@@ -31,49 +31,15 @@ import com.google.gson.JsonParser;
  *
  */
 public class TabManager implements Observer{
-
-	private boolean serverOnline = false;
-	
-	private List<Tab> tabList = new ArrayList<>();
-	private Tab activeTab = null;
 	
 	private Gson gson = new Gson();
-
-	/** Constructor sets default port to 100, and calls startSocketServer() */
-	TabManager(){ //constructor without options
-		port(100); //set port to default: 100
-		startSocketServer();
-		
-		
-	}
-	
-	/** Constructor with <i>Tab Options</i>, like port number or JSON formatting. TODO: this */
-//	TabManager(TabOptions options){ //constructor with options
-//		startSocketServer();
-//	}
-	
-	/**
-	 * Starts the socket server, waits for initialisation, and sets an event observer.
-	 * <p>The WebSocket server runs on localhost, and sockets are interacted with through
-	 * the SocketHandler class, accessible by the SocketHandler.<i>instance</i>.
-	 * <p>After initialisation, the socket handler waits for a connection, which has
-	 * a listener here. When a connection is made, the Observer is alerted, and the
-	 * program runs.
-	 */
-	private void startSocketServer() {
-		webSocket("/", SocketHandler.class); //create Web Socket object
-		init(); //start the socket server
-		awaitInitialization(); //Wait till everything is up and running
-		
-		SocketHandler.instance.addObserver(this); //Set event handler
-	}
 	
 	/**
 	 * Sends a message to the WebSocket to return all tab information
 	 * <p>Once returned, the event manager will call the function but with the
 	 * response included.
 	 */
-	private void getAllInWindow() {
+	public void getAllInWindow() {
 		JsonObject json = new JsonObject();
 		json.addProperty("request", "getAllInWindow");
 		String jsonOutput = gson.toJson(json);
@@ -93,7 +59,8 @@ public class TabManager implements Observer{
 		
 		for(final JsonElement tabData : tabsArray){
 			Tab tab = gson.fromJson(tabData, Tab.class);
-			System.out.println(tab.getIndex() + " : " + tab.getUrl());
+			System.out.println(tabData);
+			//TODO: Storage of data.
 		}
 		
 	}
@@ -108,48 +75,39 @@ public class TabManager implements Observer{
 	 * <p>This method will create a new tab with optional parameters:
 	 * URL
 	 * @param url A string URL.
-	 * 
-	 * TODO: CREATE EMPTY OBJECT
-	 * TODO: ASSIGN IDENTIFIER
-	 * TODO: PASS IDENTIFIER IN JSON MESSAGE
-	 * @return 
+	 * @return The Tab object containing all info
 	 */
 	public Tab newTab(String url) {
-		if(serverOnline){
-			final String requestId = UUID.randomUUID().toString(); //create a unique ID for the object
-			
-			JsonObject json = new JsonObject();
-			//form JSON
-			json.addProperty("request", "newTab");
-			json.addProperty("requestId", requestId);
-			json.addProperty("url", url);
-			
-			String jsonOutput = gson.toJson(json);
-			sendMessage(jsonOutput);
-			
-			CompletableFuture<Tab> futureTab = new CompletableFuture<>();
-			futureNewTabs.put(requestId,  futureTab);
-			try {
-				return futureTab.get();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (ExecutionException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		final String requestId = UUID.randomUUID().toString(); //create a unique ID for the object
+		
+		JsonObject json = new JsonObject();
+		//form JSON
+		json.addProperty("request", "newTab");
+		json.addProperty("requestId", requestId);
+		json.addProperty("url", url);
+		
+		String jsonOutput = gson.toJson(json);
+		sendMessage(jsonOutput);
+		
+		CompletableFuture<Tab> futureTab = new CompletableFuture<>();
+		futureNewTabs.put(requestId,  futureTab);
+		try {
+			return futureTab.get();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
 		return null;
-		
 	}
 	
 	/**
-	 * TODO: CHECK RESPONSE IDENTIFIER
-	 * TODO: ASSIGN TAB DATA TO OBJECT
-	 * @param response
+	 * Takes the WebSocket newTab response, and stores the data in a tab object.
+	 * @param response	JSON sent from the WebSocket.
 	 */
-	
 	private void newTab(Object response){
 		JsonObject stringResponse = gson.fromJson(response.toString(), JsonObject.class);
 		String created = stringResponse.get("created").getAsString();
@@ -164,7 +122,7 @@ public class TabManager implements Observer{
 	 * Takes a String and sends it to the WebSocket.
 	 * @param message	a <b>JSON formatted String</b> with instructions for CRX.
 	 */
-	public void sendMessage(String message){
+	private void sendMessage(String message){
 		try {
 			SocketHandler.instance.sendMessage(message);
 		} catch (IOException e) {
@@ -179,30 +137,14 @@ public class TabManager implements Observer{
 	 */
 	@Override
 	public void update(Observable o, Object msg) {	
-		String response = getJSONResponse(msg);
-		
-		if(response.equals("connected")){
-			System.out.println("\nThe CRX has connected.\n");
-			this.serverOnline = true;
-			getAllInWindow();
-		} else if(response.equals("getAllInWindow")){
+		String response = JsonUtils.getJSONResponse(msg);
+
+		if(response.equals("getAllInWindow")){
 			getAllInWindow(msg);
 		} else if(response.equals("newTab")){
 			newTab(msg);
+		} else {
+			System.out.println("There was a problem with the response.");
 		}
-	}
-
-	/**
-	 * Takes a JSON message and finds the response value.
-	 * <p>This is usually a response from the websocket, but can be used to get the response
-	 * from any JSON if it contains that attribute.
-	 * @param msg	The <i>JSON formatted message.</i> This is sent as an Obj, because it is via the events.
-	 * @return A string with the response value.
-	 */
-	private String getJSONResponse(Object msg) {
-		Gson gson = new Gson();
-		JsonObject response = gson.fromJson(msg.toString(), JsonObject.class);
-		String responseString = response.get("response").getAsString();
-		return responseString;
 	}
 }

@@ -3,15 +3,15 @@ package websockets;
 public class Main {
 	
 	public static void main(String[] args){
-		TabManager chrome = new TabManager();
 		
-		try{
-			Thread.sleep(10000);
-		} catch (Exception e){
-			//lol
-		}
-		Tab main = chrome.newTab("http://gerryfletcher.me");
-		System.out.println("index: " + main.getIndex());
+		ChromeConnect tabConnector = new ChromeConnect(100); //create the Connect object on port 100
+		TabManager chrome = tabConnector.getTabManager(); //get the TabManager object
+		
+		chrome.getAllInWindow(); //List all the current tabs
+		
+		Tab exampleTab = chrome.newTab("http://google.co.uk"); //create a new tab
+		
+		System.out.println(exampleTab.getId()); //print its ID
 	}
 	
 }
