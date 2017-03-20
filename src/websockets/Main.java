@@ -7,11 +7,19 @@ public class Main {
 		ChromeConnect tabConnector = new ChromeConnect(100); //create the Connect object on port 100
 		TabManager chrome = tabConnector.getTabManager(); //get the TabManager object
 		
-		chrome.getAllInWindow(); //List all the current tabs
+		Tab exampleTab = chrome.newTab("http://gerryfletcher.me"); //create a new tab
+		exampleTab.switchTo();
+		System.out.println(exampleTab.getId());
+		try{
+			Thread.sleep(1000);
+		} catch (Exception e){
+			
+		}
 		
-		Tab exampleTab = chrome.newTab("http://google.co.uk"); //create a new tab
+		Tab github = chrome.newTab("http://github.com");
+		chrome.newTab("http://facebook.com");
 		
-		System.out.println(exampleTab.getId()); //print its ID
+		exampleTab.close();
 	}
 	
 }

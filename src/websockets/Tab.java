@@ -1,8 +1,15 @@
 package websockets;
 
+import java.io.IOException;
+
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 public class Tab {
+	
+	//private final Gson gson = new Gson();
+	
 	private boolean active;
 	private boolean audible;
 	
@@ -261,9 +268,9 @@ public class Tab {
 	/**
 	 * @param id the id to set
 	 */
-	public void setId(int id) {
-		this.id = id;
-	}
+//	public void setId(int id) {
+//		this.id = id;
+//	}
 	
 	//index
 	/**
@@ -295,6 +302,45 @@ public class Tab {
 		this.windowId = windowId;
 	}
 	
+	/**
+	 * Changes the browser focus to this tab.
+	 */
+	public void switchTo() {
+		Gson gson = new Gson();
+		
+		int tabId = getId();
+		JsonObject json = new JsonObject();
+		json.addProperty("request", "switchTo");
+		json.addProperty("tabId", tabId);
+		String jsonOutput = gson.toJson(json);
+		sendMessage(jsonOutput);
+	}
 	
+	/**
+	 * Closes this tab on the browser.
+	 */
+	public void close() {
+		Gson gson = new Gson();
+		
+		int tabId = getId();
+		JsonObject json = new JsonObject();
+		json.addProperty("request", "closeTab");
+		json.addProperty("tabId", tabId);
+		String jsonOutput = gson.toJson(json);
+		sendMessage(jsonOutput);
+	}
+	
+	/**
+	 * Takes a String and sends it to the WebSocket.
+	 * @param message	a <b>JSON formatted String</b> with instructions for CRX.
+	 */
+	private void sendMessage(String message){
+		try {
+			SocketHandler.instance.sendMessage(message);
+		} catch (IOException e) {
+			System.out.println("Cannot send message");
+			e.printStackTrace();
+		}
+	}
 	
 }

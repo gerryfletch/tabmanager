@@ -35,37 +35,6 @@ public class TabManager implements Observer{
 	private Gson gson = new Gson();
 	
 	/**
-	 * Sends a message to the WebSocket to return all tab information
-	 * <p>Once returned, the event manager will call the function but with the
-	 * response included.
-	 */
-	public void getAllInWindow() {
-		JsonObject json = new JsonObject();
-		json.addProperty("request", "getAllInWindow");
-		String jsonOutput = gson.toJson(json);
-		sendMessage(jsonOutput);
-	}
-	
-	/**
-	 * Takes the retrieved object, and stores the data.
-	 * <p>The response is passed as JSON, so we store each tab as 
-	 * a Tab object.
-	 * @param msg	JSON formatted data
-	 */
-	private void getAllInWindow(Object response){
-		JsonObject stringResponse = gson.fromJson(response.toString(), JsonObject.class);
-		
-		JsonArray tabsArray = stringResponse.get("tabData").getAsJsonArray();
-		
-		for(final JsonElement tabData : tabsArray){
-			Tab tab = gson.fromJson(tabData, Tab.class);
-			System.out.println(tabData);
-			//TODO: Storage of data.
-		}
-		
-	}
-	
-	/**
 	 * New Tab Map to handle WebSocket:newTab response objects
 	 */
 	Map<String, CompletableFuture<Tab>> futureNewTabs = new ConcurrentHashMap<>();
@@ -117,6 +86,65 @@ public class TabManager implements Observer{
 		futureNewTabs.get(requestId).complete(tab);
 	}
 	
+	/**
+	 * Switches to a Tab using the TabID.
+	 * @param tab
+	 */
+	public void switchTo(Tab tab){
+		int tabId = tab.getId();
+		JsonObject json = new JsonObject();
+		json.addProperty("request",  "switchTo");
+		json.addProperty("tabId", tabId);
+		String jsonOutput = gson.toJson(json);
+		sendMessage(jsonOutput);
+	}
+	
+	/**
+	 * Closes a Tab using the TabID.
+	 * @param exampleTab
+	 */
+	public void close(Tab exampleTab) {
+		Gson gson = new Gson();
+		
+		int tabId = exampleTab.getId();
+		JsonObject json = new JsonObject();
+		json.addProperty("request", "closeTab");
+		json.addProperty("tabId", tabId);
+		String jsonOutput = gson.toJson(json);
+		sendMessage(jsonOutput);
+	}
+	
+	/**
+	 * Sends a message to the WebSocket to return all tab information
+	 * <p>Once returned, the event manager will call the function but with the
+	 * response included.
+	 */
+	public void getAllInWindow() {
+		JsonObject json = new JsonObject();
+		json.addProperty("request", "getAllInWindow");
+		String jsonOutput = gson.toJson(json);
+		sendMessage(jsonOutput);
+	}
+	
+	/**
+	 * Takes the retrieved object, and stores the data.
+	 * <p>The response is passed as JSON, so we store each tab as 
+	 * a Tab object.
+	 * @param msg	JSON formatted data
+	 */
+	private void getAllInWindow(Object response){
+		JsonObject stringResponse = gson.fromJson(response.toString(), JsonObject.class);
+		
+		JsonArray tabsArray = stringResponse.get("tabData").getAsJsonArray();
+		
+		for(final JsonElement tabData : tabsArray){
+			Tab tab = gson.fromJson(tabData, Tab.class);
+			System.out.println(tabData);
+			//TODO: Storage of data.
+		}
+		
+	}
+	
 	
 	/**
 	 * Takes a String and sends it to the WebSocket.
@@ -143,8 +171,7 @@ public class TabManager implements Observer{
 			getAllInWindow(msg);
 		} else if(response.equals("newTab")){
 			newTab(msg);
-		} else {
-			System.out.println("There was a problem with the response.");
 		}
+		
 	}
 }
