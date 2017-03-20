@@ -103,12 +103,22 @@ public class TabManager implements Observer{
 	 * Closes a Tab using the TabID.
 	 * @param exampleTab
 	 */
-	public void close(Tab exampleTab) {
-		Gson gson = new Gson();
-		
-		int tabId = exampleTab.getId();
+	public void close(Tab tab) {		
+		int tabId = tab.getId();
 		JsonObject json = new JsonObject();
 		json.addProperty("request", "closeTab");
+		json.addProperty("tabId", tabId);
+		String jsonOutput = gson.toJson(json);
+		sendMessage(jsonOutput);
+	}
+	
+	/**
+	 * Refreshes the tab using the TabID.
+	 */
+	public void reload(Tab tab) {
+		int tabId = tab.getId();
+		JsonObject json = new JsonObject();
+		json.addProperty("request", "reloadTab");
 		json.addProperty("tabId", tabId);
 		String jsonOutput = gson.toJson(json);
 		sendMessage(jsonOutput);
@@ -140,11 +150,18 @@ public class TabManager implements Observer{
 		for(final JsonElement tabData : tabsArray){
 			Tab tab = gson.fromJson(tabData, Tab.class);
 			System.out.println(tabData);
-			//TODO: Storage of data.
+			//TODO: Return Tab Objects as a List.
 		}
 		
 	}
 	
+	public void sleep(int i) {
+		try {
+			Thread.sleep(i);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	/**
 	 * Takes a String and sends it to the WebSocket.

@@ -46,12 +46,6 @@ public class Tab {
 	public boolean isActive() {
 		return active;
 	}
-	/**
-	 * @param active true/false
-	 */
-	public void setActive(boolean active) {
-		this.active = active;
-	}
 	
 	//audible
 	/**
@@ -62,12 +56,6 @@ public class Tab {
 	public boolean isAudible() {
 		return audible;
 	}
-	/**
-	 * @param audible  true/false
-	 */
-	public void setAudible(boolean audible) {
-		this.audible = audible;
-	}
 	
 	//discardable
 	/**
@@ -76,12 +64,6 @@ public class Tab {
 	 */
 	public boolean isAutoDiscardable() {
 		return autoDiscardable;
-	}
-	/**
-	 * @param autoDiscardable  true/false
-	 */
-	public void setAutoDiscardable(boolean autoDiscardable) {
-		this.autoDiscardable = autoDiscardable;
 	}
 	
 	//discarded
@@ -94,12 +76,6 @@ public class Tab {
 	public boolean isDiscarded() {
 		return discarded;
 	}
-	/**
-	 * @param discarded  true/false
-	 */
-	public void setDiscarded(boolean discarded) {
-		this.discarded = discarded;
-	}
 	
 	//highlighted
 	/**
@@ -109,12 +85,6 @@ public class Tab {
 	public boolean isHighlighted() {
 		return highlighted;
 	}
-	/**
-	 * @param highlighted  true/false
-	 */
-	public void setHighlighted(boolean highlighted) {
-		this.highlighted = highlighted;
-	}
 	
 	//pinned
 	/**
@@ -123,12 +93,6 @@ public class Tab {
 	 */
 	public boolean isPinned() {
 		return pinned;
-	}
-	/**
-	 * @param pinned  true/false
-	 */
-	public void setPinned(boolean pinned) {
-		this.pinned = pinned;
 	}
 	
 	//selected BE CAREFUL WITH THIS
@@ -140,12 +104,6 @@ public class Tab {
 	public boolean isSelected() {
 		return selected;
 	}
-	/**
-	 * @param selected  true/false
-	 */
-	public void setSelected(boolean selected) {
-		this.selected = selected;
-	}
 	
 	//incognito
 	/**
@@ -154,12 +112,6 @@ public class Tab {
 	 */
 	public boolean isIncognito() {
 		return incognito;
-	}
-	/**
-	 * @param incognito  true/false
-	 */
-	public void setIncognito(boolean incognito) {
-		this.incognito = incognito;
 	}
 	
 	
@@ -172,12 +124,6 @@ public class Tab {
 	public String getFavIconUrl() {
 		return favIconUrl;
 	}
-	/**
-	 * @param favIconUrl the favIconUrl to set
-	 */
-	public void setFavIconUrl(String favIconUrl) {
-		this.favIconUrl = favIconUrl;
-	}
 	
 	//status
 	/**
@@ -185,12 +131,6 @@ public class Tab {
 	 */
 	public String getStatus() {
 		return status;
-	}
-	/**
-	 * @param status the status to set. <i>loading</i> or <i>complete</i>
-	 */
-	public void setStatus(String status) {
-		this.status = status;
 	}
 	
 	//title
@@ -201,25 +141,13 @@ public class Tab {
 	public String getTitle() {
 		return title;
 	}
-	/**
-	 * @param title the title to set
-	 */
-	public void setTitle(String title) {
-		this.title = title;
-	}
+	
 	/**
 	 * @return the url
 	 */
-	
 	//url
 	public String getUrl() {
 		return url;
-	}
-	/**
-	 * @param url the url to set
-	 */
-	public void setUrl(String url) {
-		this.url = url;
 	}
 	
 	
@@ -233,12 +161,6 @@ public class Tab {
 	public int getWidth() {
 		return width;
 	}
-	/**
-	 * @param width the width to set in pixels
-	 */
-	public void setWidth(int width) {
-		this.width = width;
-	}
 	
 	//height
 	/**
@@ -247,12 +169,6 @@ public class Tab {
 	 */
 	public int getHeight() {
 		return height;
-	}
-	/**
-	 * @param height the height to set in pixels
-	 */
-	public void setHeight(int height) {
-		this.height = height;
 	}
 	
 	//id
@@ -265,12 +181,6 @@ public class Tab {
 	public int getId() {
 		return id;
 	}
-	/**
-	 * @param id the id to set
-	 */
-//	public void setId(int id) {
-//		this.id = id;
-//	}
 	
 	//index
 	/**
@@ -280,12 +190,6 @@ public class Tab {
 	public int getIndex() {
 		return index;
 	}
-	/**
-	 * @param index the index to set
-	 */
-	public void setIndex(int index) {
-		this.index = index;
-	}
 	
 	//window id
 	/**
@@ -294,12 +198,6 @@ public class Tab {
 	 */
 	public int getWindowId() {
 		return windowId;
-	}
-	/**
-	 * @param windowId the windowId to set
-	 */
-	public void setWindowId(int windowId) {
-		this.windowId = windowId;
 	}
 	
 	/**
@@ -314,6 +212,8 @@ public class Tab {
 		json.addProperty("tabId", tabId);
 		String jsonOutput = gson.toJson(json);
 		sendMessage(jsonOutput);
+		
+		
 	}
 	
 	/**
@@ -325,6 +225,20 @@ public class Tab {
 		int tabId = getId();
 		JsonObject json = new JsonObject();
 		json.addProperty("request", "closeTab");
+		json.addProperty("tabId", tabId);
+		String jsonOutput = gson.toJson(json);
+		sendMessage(jsonOutput);
+	}
+	
+	/**
+	 * Refreshes this tab on the browser.
+	 */
+	public void reload() {
+		Gson gson = new Gson();
+		
+		int tabId = getId();
+		JsonObject json = new JsonObject();
+		json.addProperty("request", "reloadTab");
 		json.addProperty("tabId", tabId);
 		String jsonOutput = gson.toJson(json);
 		sendMessage(jsonOutput);
