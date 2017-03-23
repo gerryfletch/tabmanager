@@ -1,4 +1,4 @@
-package websockets;
+package tabmanager;
 
 public class TabOptions {
 

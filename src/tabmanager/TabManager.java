@@ -1,4 +1,4 @@
-package websockets;
+package tabmanager;
 
 import static spark.Spark.*;
 
@@ -91,37 +91,23 @@ public class TabManager implements Observer{
 	 * @param tab
 	 */
 	public void switchTo(Tab tab){
-		int tabId = tab.getId();
-		JsonObject json = new JsonObject();
-		json.addProperty("request",  "switchTo");
-		json.addProperty("tabId", tabId);
-		String jsonOutput = gson.toJson(json);
-		sendMessage(jsonOutput);
+		tab.switchTo(); //calls method from Tab instead
 	}
+	
 	
 	/**
 	 * Closes a Tab using the TabID.
 	 * @param exampleTab
 	 */
 	public void close(Tab tab) {		
-		int tabId = tab.getId();
-		JsonObject json = new JsonObject();
-		json.addProperty("request", "closeTab");
-		json.addProperty("tabId", tabId);
-		String jsonOutput = gson.toJson(json);
-		sendMessage(jsonOutput);
+		tab.close(); //calls method from Tab instead
 	}
 	
 	/**
 	 * Refreshes the tab using the TabID.
 	 */
 	public void reload(Tab tab) {
-		int tabId = tab.getId();
-		JsonObject json = new JsonObject();
-		json.addProperty("request", "reloadTab");
-		json.addProperty("tabId", tabId);
-		String jsonOutput = gson.toJson(json);
-		sendMessage(jsonOutput);
+		tab.reload(); //calls method from Tab instead
 	}
 	
 	/**
@@ -147,9 +133,11 @@ public class TabManager implements Observer{
 		
 		JsonArray tabsArray = stringResponse.get("tabData").getAsJsonArray();
 		
+		List<Tab> tabList = null;
+		
 		for(final JsonElement tabData : tabsArray){
 			Tab tab = gson.fromJson(tabData, Tab.class);
-			System.out.println(tabData);
+			tabList.add(tab);
 			//TODO: Return Tab Objects as a List.
 		}
 		

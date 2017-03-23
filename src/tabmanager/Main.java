@@ -1,4 +1,4 @@
-package websockets;
+package tabmanager;
 
 public class Main {
 	
@@ -8,9 +8,12 @@ public class Main {
 		TabManager chrome = tabConnector.getTabManager(); //get the TabManager object
 		
 		Tab facebook = chrome.newTab("http://facebook.com");
+		System.out.println(facebook.isActive());
 		chrome.sleep(3000);
-		//chrome.reload(facebook);
-		facebook.reload();
+		
+		chrome.switchTo(facebook);
+		System.out.println(facebook.isActive());
+		//TODO: change all settings to correlate to Tab action
 		
 	}
 	

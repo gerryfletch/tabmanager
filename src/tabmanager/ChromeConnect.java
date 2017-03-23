@@ -1,4 +1,4 @@
-package websockets;
+package tabmanager;
 
 import java.util.Observable;
 import java.util.Observer;

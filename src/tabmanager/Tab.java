@@ -1,4 +1,4 @@
-package websockets;
+package tabmanager;
 
 import java.io.IOException;
 
@@ -21,7 +21,7 @@ public class Tab {
 	private boolean selected;
 	private boolean incognito;
 	
-	private String favIconUrl;
+	private String faviconUrl;
 	private String status;
 	private String title;
 	private String url;
@@ -122,7 +122,7 @@ public class Tab {
 	 * @return the favIconUrl
 	 */
 	public String getFavIconUrl() {
-		return favIconUrl;
+		return faviconUrl;
 	}
 	
 	//status
