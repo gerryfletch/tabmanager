@@ -1,5 +1,8 @@
 # Chrome TabManager
 TabManager is a Java Library that uses WebSockets to manage a Chrome window.<br>
+
+**IMPORTANT**: I am having some issues with Jetty's web socket queue, so the thread is bugging up if too many requests are made at once. This is a priority issue I am attempting to fix. A temporary fix is to sleep between requests, results may vary.
+
 TabManager is a fully event-driven platform, asynchronously sending and receiving JSON formatted commands and responses to the TabManager Chrome Extension. Features currently include tab object storage and some basic methods like create, close, reload and switchTo. All of the tab attributes are stored, such as:
  - url
  - id
