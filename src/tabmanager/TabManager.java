@@ -34,10 +34,12 @@ public class TabManager implements Observer{
 	
 	private Gson gson = new Gson();
 	
+	private Map<Integer, Tab> tabMap = new HashMap<>(); //tab id : tab
+	
 	/**
 	 * New Tab Map to handle WebSocket:newTab response objects
 	 */
-	Map<String, CompletableFuture<Tab>> futureNewTabs = new ConcurrentHashMap<>();
+	private Map<String, CompletableFuture<Tab>> futureNewTabs = new ConcurrentHashMap<>();
 
 	/**
 	 * Creates a new tab with a String URL.
@@ -50,7 +52,7 @@ public class TabManager implements Observer{
 		final String requestId = UUID.randomUUID().toString(); //create a unique ID for the object
 		
 		JsonObject json = new JsonObject();
-		//form JSON
+
 		json.addProperty("request", "newTab");
 		json.addProperty("requestId", requestId);
 		json.addProperty("url", url);
@@ -59,14 +61,13 @@ public class TabManager implements Observer{
 		sendMessage(jsonOutput);
 		
 		CompletableFuture<Tab> futureTab = new CompletableFuture<>();
+		
 		futureNewTabs.put(requestId,  futureTab);
 		try {
 			return futureTab.get();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -79,11 +80,15 @@ public class TabManager implements Observer{
 	 */
 	private void newTab(Object response){
 		JsonObject stringResponse = gson.fromJson(response.toString(), JsonObject.class);
+		
 		String created = stringResponse.get("created").getAsString();
 		String requestId = stringResponse.get("requestId").getAsString();
 		JsonElement tabData = stringResponse.get("tabData");
+		
 		Tab tab = gson.fromJson(tabData, Tab.class);
 		futureNewTabs.get(requestId).complete(tab);
+		
+		tabMap.put(tab.getId(), tab);
 	}
 	
 	/**
@@ -91,10 +96,54 @@ public class TabManager implements Observer{
 	 * @param tab
 	 */
 	public void switchTo(Tab tab){
-		tab.switchTo(); //calls method from Tab instead
+		int tabId = tab.getId();
+		JsonObject json = new JsonObject();
+		json.addProperty("request", "switchTo");
+		json.addProperty("tabId", tabId);
+		String jsonOutput = gson.toJson(json);
+		sendMessage(jsonOutput);
+		
+		//tab.active = true;
+		
 	}
 	
-	
+	/**
+	 * After switching, we update the object with the response.
+	 * @param response
+	 */
+	private void switchTo(Object response) {
+		
+		JsonObject stringResponse = gson.fromJson(response.toString(), JsonObject.class);
+		JsonElement tabData = stringResponse.get("tabData");
+		Tab tempTab = gson.fromJson(tabData, Tab.class);
+		
+		int id = tempTab.getId();
+		
+		Tab original = tabMap.get(id);
+		original.copyValues(tempTab);
+		
+		
+//		tabMap.get(id).active = true;
+//		//tab.active = true;
+	}
+
+	/**
+	 * Takes the TabData object from a JSON response, looks for the ID
+	 * and populates that Tab Object. 
+	 * @param response
+	 */
+	public void updateTab(Object response) {
+		JsonObject stringResponse = gson.fromJson(response.toString(), JsonObject.class);
+		JsonElement tabData = stringResponse.get("tabData");
+		
+		Tab tempTab = gson.fromJson(tabData, Tab.class);
+		if(tempTab != null){
+			int tabId = tempTab.getId();
+			//get actual tab from map
+			
+		}
+	}
+
 	/**
 	 * Closes a Tab using the TabID.
 	 * @param exampleTab
@@ -176,7 +225,16 @@ public class TabManager implements Observer{
 			getAllInWindow(msg);
 		} else if(response.equals("newTab")){
 			newTab(msg);
+		} else if(response.equals("switchTo")){
+			switchTo(msg);
 		}
 		
+	}
+
+	public void query() {
+		System.out.println("query: ");
+		for(Object o : tabMap.entrySet()){
+			System.out.println("\n" + o.toString());
+		}
 	}
 }

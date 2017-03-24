@@ -44,6 +44,9 @@ public class ChromeConnect implements Observer {
 	
 	private void startSocketServer() {
 		webSocket("/", SocketHandler.class); //create Web Socket object
+		int maxThreads = 6;
+		int timeOutMillis = 3000;
+		threadPool(maxThreads);
 		init(); //start the socket server
 		awaitInitialization();
 		SocketHandler.instance.addObserver(this); //Set event handler

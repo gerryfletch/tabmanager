@@ -1,6 +1,7 @@
 package tabmanager;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -8,9 +9,34 @@ import com.google.gson.JsonObject;
 
 public class Tab {
 	
-	//private final Gson gson = new Gson();
+	private UUID identity = null;
 	
-	private boolean active;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((identity == null) ? 0 : identity.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Tab other = (Tab) obj;
+		if (identity == null) {
+			if (other.identity != null)
+				return false;
+		} else if (!identity.equals(other.identity))
+			return false;
+		return true;
+	}
+
+	boolean active;
 	private boolean audible;
 	
 	private boolean autoDiscardable;
@@ -33,11 +59,12 @@ public class Tab {
 	private int index;
 	private int windowId;
 	
+	
+	
+
+	
 	//BOOLEAN VALUES
 	
-	public Tab(JsonElement tab) {
-		// TODO Auto-generated constructor stub
-	}
 	//active
 	/**
 	 * Whether the tab is active in its window. (Does not necessarily mean the window is focused.)
@@ -45,6 +72,10 @@ public class Tab {
 	 */
 	public boolean isActive() {
 		return active;
+	}
+	
+	public void setActive(boolean choice) {
+		this.active = choice;
 	}
 	
 	//audible
@@ -203,18 +234,20 @@ public class Tab {
 	/**
 	 * Changes the browser focus to this tab.
 	 */
-	public void switchTo() {
-		Gson gson = new Gson();
-		
-		int tabId = getId();
-		JsonObject json = new JsonObject();
-		json.addProperty("request", "switchTo");
-		json.addProperty("tabId", tabId);
-		String jsonOutput = gson.toJson(json);
-		sendMessage(jsonOutput);
-		
-		
-	}
+//	public void switchTo() {
+//		Gson gson = new Gson();
+//		
+//		int tabId = getId();
+//		JsonObject json = new JsonObject();
+//		json.addProperty("request", "switchTo");
+//		json.addProperty("tabId", tabId);
+//		String jsonOutput = gson.toJson(json);
+//		sendMessage(jsonOutput);
+//		
+//		
+//		this.active = true;
+//		
+//	}
 	
 	/**
 	 * Closes this tab on the browser.
@@ -255,6 +288,10 @@ public class Tab {
 			System.out.println("Cannot send message");
 			e.printStackTrace();
 		}
+	}
+
+	public void copyValues(Tab tempTab) {
+		this.active = tempTab.active;
 	}
 	
 }
