@@ -10,33 +10,6 @@ import com.google.gson.JsonObject;
 import me.gerryfletcher.tabmanager.connect.SocketHandler;
 
 public class Tab {
-	
-	private UUID identity = null;
-	
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((identity == null) ? 0 : identity.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Tab other = (Tab) obj;
-		if (identity == null) {
-			if (other.identity != null)
-				return false;
-		} else if (!identity.equals(other.identity))
-			return false;
-		return true;
-	}
 
 	boolean active;
 	private boolean audible;
@@ -60,11 +33,7 @@ public class Tab {
 	private int id;
 	private int index;
 	private int windowId;
-	
-	
-	
 
-	
 	//BOOLEAN VALUES
 	
 	//active
@@ -232,24 +201,6 @@ public class Tab {
 	public int getWindowId() {
 		return windowId;
 	}
-	
-	/**
-	 * Changes the browser focus to this tab.
-	 */
-//	public void switchTo() {
-//		Gson gson = new Gson();
-//		
-//		int tabId = getId();
-//		JsonObject json = new JsonObject();
-//		json.addProperty("request", "switchTo");
-//		json.addProperty("tabId", tabId);
-//		String jsonOutput = gson.toJson(json);
-//		sendMessage(jsonOutput);
-//		
-//		
-//		this.active = true;
-//		
-//	}
 	
 	/**
 	 * Closes this tab on the browser.
