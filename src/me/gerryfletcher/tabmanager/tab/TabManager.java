@@ -37,6 +37,8 @@ import me.gerryfletcher.tabmanager.util.UrlUtils;
  */
 public class TabManager implements Observer{
 	
+	TaskHandler taskHandler = new TaskHandler();
+	
 	private Gson gson = new Gson();
 	
 	/**
@@ -45,12 +47,7 @@ public class TabManager implements Observer{
 	private Tab activeTab = null;
 	
 	private Map<Integer, Tab> tabMap = new HashMap<>(); //tab id : tab
-	
-	/**
-	 * tabActionMap stores each action with a null value, and blocks the thread till the
-	 * action is completed.
-	 */
-	private Map<String, CompletableFuture<Void>> tabActionMap = new ConcurrentHashMap<>();
+
 	
 	/**
 	 * New Tab Map to handle WebSocket:newTab response objects
@@ -129,7 +126,7 @@ public class TabManager implements Observer{
 		String jsonOutput = gson.toJson(json);
 		sendMessage(jsonOutput);
 		
-		waitUntilReceived(requestId);
+		taskHandler.waitUntilReceived(requestId);
 		
 	}
 
@@ -228,30 +225,6 @@ public class TabManager implements Observer{
 		
 	}
 	
-
-	private void waitUntilReceived(String requestId) {		
-		CompletableFuture<Void> future = new CompletableFuture<>();
-		
-		tabActionMap.put(requestId, future);
-		try {
-			future.get();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			e.printStackTrace();
-		}
-		
-		tabActionMap.remove(requestId);
-		
-	}
-	
-	private void actionReceived(Object msg) {
-		String requestId = JsonUtils.getJSON(msg, "requestId");
-		if(requestId != null){
-			tabActionMap.get(requestId).complete(null);
-		}
-	}
-	
 	public void sleep(int i) {
 		try {
 			Thread.sleep(i);
@@ -292,15 +265,8 @@ public class TabManager implements Observer{
 				switchTo(msg);
 			}
 			
-			actionReceived(msg);
+			taskHandler.actionReceived(msg);
 			
-		}
-	}
-
-	public void query() {
-		System.out.println("query: ");
-		for(Object o : tabMap.entrySet()){
-			System.out.println("\n" + o.toString());
 		}
 	}
 }
