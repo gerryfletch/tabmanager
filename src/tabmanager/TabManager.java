@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.UUID;
@@ -34,7 +35,18 @@ public class TabManager implements Observer{
 	
 	private Gson gson = new Gson();
 	
+	/**
+	 * The currently active tab
+	 */
+	private Tab activeTab = null;
+	
 	private Map<Integer, Tab> tabMap = new HashMap<>(); //tab id : tab
+	
+	/**
+	 * tabActionMap stores each action with a null value, and blocks the thread till the
+	 * action is completed.
+	 */
+	private Map<String, CompletableFuture<Void>> tabActionMap = new ConcurrentHashMap<>();
 	
 	/**
 	 * New Tab Map to handle WebSocket:newTab response objects
@@ -88,6 +100,8 @@ public class TabManager implements Observer{
 		Tab tab = gson.fromJson(tabData, Tab.class);
 		futureNewTabs.get(requestId).complete(tab);
 		
+		futureNewTabs.remove(requestId);
+		
 		tabMap.put(tab.getId(), tab);
 	}
 	
@@ -96,17 +110,22 @@ public class TabManager implements Observer{
 	 * @param tab
 	 */
 	public void switchTo(Tab tab){
+		final String requestId = UUID.randomUUID().toString(); //create a unique ID for the object
 		int tabId = tab.getId();
+		
 		JsonObject json = new JsonObject();
+		
 		json.addProperty("request", "switchTo");
-		json.addProperty("tabId", tabId);
+		json.addProperty("requestId", requestId); //UUID
+		json.addProperty("tabId", tabId); //actual tab ID
+		
 		String jsonOutput = gson.toJson(json);
 		sendMessage(jsonOutput);
 		
-		//tab.active = true;
+		waitUntilReceived(requestId);
 		
 	}
-	
+
 	/**
 	 * After switching, we update the object with the response.
 	 * @param response
@@ -115,16 +134,26 @@ public class TabManager implements Observer{
 		
 		JsonObject stringResponse = gson.fromJson(response.toString(), JsonObject.class);
 		JsonElement tabData = stringResponse.get("tabData");
+		
 		Tab tempTab = gson.fromJson(tabData, Tab.class);
 		
 		int id = tempTab.getId();
 		
-		Tab original = tabMap.get(id);
-		original.copyValues(tempTab);
+		Tab original = tabMap.get(id); //get the tab from the map
 		
+		original.copyValues(tempTab); //set the new values of the tab
 		
-//		tabMap.get(id).active = true;
-//		//tab.active = true;
+		swapActiveTab(original);
+
+	}
+
+	private void swapActiveTab(Tab original) {
+		if(this.activeTab == null){
+			this.activeTab = original;
+		} else {
+			this.activeTab.active = false;
+			this.activeTab = original;
+		}
 	}
 
 	/**
@@ -192,6 +221,30 @@ public class TabManager implements Observer{
 		
 	}
 	
+
+	private void waitUntilReceived(String requestId) {		
+		CompletableFuture<Void> future = new CompletableFuture<>();
+		
+		tabActionMap.put(requestId, future);
+		try {
+			future.get();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}
+		
+		tabActionMap.remove(requestId);
+		
+	}
+	
+	private void actionReceived(Object msg) {
+		String requestId = JsonUtils.getJSON(msg, "requestId");
+		if(requestId != null){
+			tabActionMap.get(requestId).complete(null);
+		}
+	}
+	
 	public void sleep(int i) {
 		try {
 			Thread.sleep(i);
@@ -218,17 +271,23 @@ public class TabManager implements Observer{
 	 * @param msg	a String or JSON formatted 
 	 */
 	@Override
-	public void update(Observable o, Object msg) {	
+	public void update(Observable o, Object msg) {
+		
 		String response = JsonUtils.getJSONResponse(msg);
 
-		if(response.equals("getAllInWindow")){
-			getAllInWindow(msg);
-		} else if(response.equals("newTab")){
+		if(response.equals("newTab")){
 			newTab(msg);
-		} else if(response.equals("switchTo")){
-			switchTo(msg);
+		} else {
+			
+			if(response.equals("getAllInWindow")){
+				getAllInWindow(msg);
+			} else if (response.equals("switchTo")){
+				switchTo(msg);
+			}
+			
+			actionReceived(msg);
+			
 		}
-		
 	}
 
 	public void query() {

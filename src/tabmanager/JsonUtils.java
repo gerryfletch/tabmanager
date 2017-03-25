@@ -17,4 +17,18 @@ public class JsonUtils {
 		String responseString = response.get("response").getAsString();
 		return responseString;
 	}
+	
+	public static String getJSON(Object msg, String json){
+		Gson gson = new Gson();
+		JsonObject response = gson.fromJson(msg.toString(), JsonObject.class);
+		String responseString = null;
+		try{
+			responseString = response.get(json).getAsString();
+		} catch (Exception e){
+			return null;
+		}
+		
+		return responseString;
+
+	}
 }
