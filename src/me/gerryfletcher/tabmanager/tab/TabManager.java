@@ -1,4 +1,4 @@
-package tabmanager;
+package me.gerryfletcher.tabmanager.tab;
 
 import static spark.Spark.*;
 
@@ -22,6 +22,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
+import me.gerryfletcher.tabmanager.connect.SocketHandler;
+import me.gerryfletcher.tabmanager.util.JsonUtils;
+import me.gerryfletcher.tabmanager.util.UrlUtils;
 
 /**
  * Tab Manager is to be used in conjunction with Selenium running a Chrome Driver.
@@ -61,6 +65,9 @@ public class TabManager implements Observer{
 	 * @return The Tab object containing all info
 	 */
 	public Tab newTab(String url) {
+		
+		url = UrlUtils.formatUrl(url);
+		
 		final String requestId = UUID.randomUUID().toString(); //create a unique ID for the object
 		
 		JsonObject json = new JsonObject();
@@ -273,7 +280,7 @@ public class TabManager implements Observer{
 	@Override
 	public void update(Observable o, Object msg) {
 		
-		String response = JsonUtils.getJSONResponse(msg);
+		String response = JsonUtils.getJSON(msg, "response");
 
 		if(response.equals("newTab")){
 			newTab(msg);

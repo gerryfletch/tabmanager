@@ -1,4 +1,4 @@
-package tabmanager;
+package me.gerryfletcher.tabmanager.tab;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -6,6 +6,8 @@ import java.util.UUID;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
+import me.gerryfletcher.tabmanager.connect.SocketHandler;
 
 public class Tab {
 	

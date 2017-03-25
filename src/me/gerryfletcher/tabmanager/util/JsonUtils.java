@@ -1,4 +1,4 @@
-package tabmanager;
+package me.gerryfletcher.tabmanager.util;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -11,12 +11,6 @@ public class JsonUtils {
 	 * @param msg	The <i>JSON formatted message.</i> This is sent as an Obj, because it is via the events.
 	 * @return A string with the response value.
 	 */
-	public static String getJSONResponse(Object msg) {
-		Gson gson = new Gson();
-		JsonObject response = gson.fromJson(msg.toString(), JsonObject.class);
-		String responseString = response.get("response").getAsString();
-		return responseString;
-	}
 	
 	public static String getJSON(Object msg, String json){
 		Gson gson = new Gson();

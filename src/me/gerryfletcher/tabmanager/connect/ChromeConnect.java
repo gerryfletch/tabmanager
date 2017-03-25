@@ -1,7 +1,10 @@
-package tabmanager;
+package me.gerryfletcher.tabmanager.connect;
 
 import java.util.Observable;
 import java.util.Observer;
+
+import me.gerryfletcher.tabmanager.tab.TabManager;
+import me.gerryfletcher.tabmanager.util.JsonUtils;
 
 import static spark.Spark.*;
 
@@ -27,7 +30,7 @@ public class ChromeConnect implements Observer {
 	}
 
 	/** Starts the WebSocket server on a set port **/
-	ChromeConnect(int port){
+	public ChromeConnect(int port){
 		setTabManager();
 		port(port);
 		startSocketServer();
@@ -81,7 +84,7 @@ public class ChromeConnect implements Observer {
 
 	@Override
 	public void update(Observable o, Object msg) {
-		String response = JsonUtils.getJSONResponse(msg);
+		String response = JsonUtils.getJSON(msg, "response");
 		if(response.equals("connected")){
 			System.out.println("\nThe CRX has connected.\n");
 			this.serverOnline = true;

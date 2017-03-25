@@ -1,4 +1,4 @@
-package tabmanager;
+package me.gerryfletcher.tabmanager.connect;
 
 import org.eclipse.jetty.websocket.api.*;
 import org.eclipse.jetty.websocket.api.annotations.*;
@@ -14,7 +14,7 @@ import java.util.concurrent.*;
 @WebSocket
 public class SocketHandler extends Observable{
 
-	static SocketHandler instance;
+	public static SocketHandler instance;
 	static Session session;
 	
 	private Gson gson = new Gson();
