@@ -21,23 +21,26 @@ public class Main {
 		System.out.println("\n");
 		System.out.println("Google: " + google.isActive());
 		System.out.println("Github: " + github.isActive());
+		System.out.println("\n");
 		
 		chrome.switchTo(google);
 		
 		System.out.println("\n");
 		System.out.println("Google: " + google.isActive());
 		System.out.println("Github: " + github.isActive());
+		System.out.println("\n");
 		
 		chrome.switchTo(github);
 		
 		System.out.println("\n");
 		System.out.println("Google: " + google.isActive());
 		System.out.println("Github: " + github.isActive());
-		
+		System.out.println("\n");
 		
 		/**
-		 * TODO: return a list with getAllInWindow()
+		 * TODO: Second param to newTab, boolean active
 		 * TODO: create Update() method
+		 * TODO: return a list with getAllInWindow()
 		 */
 	}
 	

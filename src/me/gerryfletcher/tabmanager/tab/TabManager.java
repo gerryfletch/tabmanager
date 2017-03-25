@@ -63,12 +63,11 @@ public class TabManager implements Observer{
 	 */
 	public Tab newTab(String url) {
 		
-		url = UrlUtils.formatUrl(url);
-		
-		final String requestId = UUID.randomUUID().toString(); //create a unique ID for the object
-		
 		JsonObject json = new JsonObject();
-
+			
+		final String requestId = UUID.randomUUID().toString(); //create a unique ID for the object
+		url = UrlUtils.formatUrl(url);	
+		
 		json.addProperty("request", "newTab");
 		json.addProperty("requestId", requestId);
 		json.addProperty("url", url);
@@ -78,16 +77,7 @@ public class TabManager implements Observer{
 		
 		CompletableFuture<Tab> futureTab = new CompletableFuture<>();
 		
-		futureNewTabs.put(requestId,  futureTab);
-		try {
-			return futureTab.get();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			e.printStackTrace();
-		}
-		
-		return null;
+		return taskHandler.waitUntilReceived(requestId, futureTab);
 	}
 	
 	/**
@@ -102,10 +92,8 @@ public class TabManager implements Observer{
 		JsonElement tabData = stringResponse.get("tabData");
 		
 		Tab tab = gson.fromJson(tabData, Tab.class);
-		futureNewTabs.get(requestId).complete(tab);
 		
-		futureNewTabs.remove(requestId);
-		
+		taskHandler.tabReceived(requestId, tab);
 		tabMap.put(tab.getId(), tab);
 	}
 	
@@ -175,21 +163,6 @@ public class TabManager implements Observer{
 			//get actual tab from map
 			
 		}
-	}
-
-	/**
-	 * Closes a Tab using the TabID.
-	 * @param exampleTab
-	 */
-	public void close(Tab tab) {		
-		tab.close(); //calls method from Tab instead
-	}
-	
-	/**
-	 * Refreshes the tab using the TabID.
-	 */
-	public void reload(Tab tab) {
-		tab.reload(); //calls method from Tab instead
 	}
 	
 	/**
@@ -265,7 +238,7 @@ public class TabManager implements Observer{
 				switchTo(msg);
 			}
 			
-			taskHandler.actionReceived(msg);
+			taskHandler.taskReceived(msg);
 			
 		}
 	}

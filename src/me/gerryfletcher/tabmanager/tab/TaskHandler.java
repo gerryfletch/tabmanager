@@ -13,17 +13,23 @@ public class TaskHandler {
 	 * tabActionMap stores each action with a null value, and blocks the thread till the
 	 * action is completed.
 	 */
-	private Map<String, CompletableFuture<Void>> tabActionMap = new ConcurrentHashMap<>();
+	private Map<String, CompletableFuture<Void>> taskMap = new ConcurrentHashMap<>();
 	
 	/**
 	 * New Tab Map to handle WebSocket:newTab response objects
 	 */
-	private Map<String, CompletableFuture<Tab>> futureNewTabs = new ConcurrentHashMap<>();
+	private Map<String, CompletableFuture<Tab>> tabMap = new ConcurrentHashMap<>();
 	
-	void waitUntilReceived(String requestId) {		
+	/**
+	 * Blocks the thread until a task is received and processed.
+	 * @param requestId	the UUID of the task
+	 */
+	void waitUntilReceived(String requestId) {	
+		
 		CompletableFuture<Void> future = new CompletableFuture<>();
 		
-		tabActionMap.put(requestId, future);
+		taskMap.put(requestId, future);
+		
 		try {
 			future.get();
 		} catch (InterruptedException e) {
@@ -32,15 +38,53 @@ public class TaskHandler {
 			e.printStackTrace();
 		}
 		
-		tabActionMap.remove(requestId);
+		taskMap.remove(requestId);
 		
 	}
 	
-	void actionReceived(Object msg) {
+	/**
+	 * Blocks the thread until a Tab returned task is received and processed.
+	 * @param requestId
+	 * @param futureTab
+	 * @return
+	 */
+	Tab waitUntilReceived(String requestId, CompletableFuture<Tab> futureTab){
+		
+		tabMap.put(requestId,  futureTab);
+		
+		try {
+			return futureTab.get();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		}
+		
+		tabMap.remove(requestId);
+		
+		return null;
+		
+	}
+	
+	/**
+	 * This method is called to complete tasks that require a UUID and nothing else.
+	 * @param msg
+	 */
+	void taskReceived(Object msg) {
 		String requestId = JsonUtils.getJSON(msg, "requestId");
 		if(requestId != null){
-			tabActionMap.get(requestId).complete(null);
+			taskMap.get(requestId).complete(null);
 		}
+	}
+	
+	/**
+	 * This method is called to complete tasks that require a UUID and a tab.
+	 * @param requestId
+	 * @param tab
+	 */
+	void tabReceived(String requestId, Tab tab){
+		tabMap.get(requestId).complete(tab);
+		tabMap.remove(requestId);
 	}
 	
 }
