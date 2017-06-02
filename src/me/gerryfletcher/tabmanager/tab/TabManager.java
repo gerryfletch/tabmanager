@@ -96,7 +96,43 @@ public class TabManager implements Observer{
 		taskHandler.tabReceived(requestId, tab);
 		tabMap.put(tab.getId(), tab);
 	}
-	
+
+	public Tab getTab(int index) {
+		JsonObject json = new JsonObject();
+
+		final String requestId = UUID.randomUUID().toString(); //create a unique ID for the object
+
+		json.addProperty("request", "getTab");
+		json.addProperty("requestId", requestId);
+		json.addProperty("index", index);
+
+		String jsonOutput = gson.toJson(json);
+		sendMessage(jsonOutput);
+
+		CompletableFuture<Tab> futureTab = new CompletableFuture<>();
+
+		return taskHandler.waitUntilReceived(requestId, futureTab);
+	}
+
+	private void getTab(Object response) {
+		JsonObject stringResponse = gson.fromJson(response.toString(), JsonObject.class);
+
+		String requestId = stringResponse.get("requestId").getAsString();
+		JsonArray tabData = stringResponse.getAsJsonArray("tabData");
+		JsonElement tabDataObj = null;
+		try {
+			tabDataObj = tabData.get(0);
+		} catch (IndexOutOfBoundsException e) {
+			System.out.println("No tab with index provided.");
+		}
+
+		if(tabDataObj != null) {
+			Tab tab = gson.fromJson(tabDataObj, Tab.class);
+			taskHandler.tabReceived(requestId, tab);
+		}
+	}
+
+
 	/**
 	 * Switches to a Tab using the TabID.
 	 * @param tab
@@ -181,7 +217,7 @@ public class TabManager implements Observer{
 	 * Takes the retrieved object, and stores the data.
 	 * <p>The response is passed as JSON, so we store each tab as 
 	 * a Tab object.
-	 * @param msg	JSON formatted data
+	 *
 	 */
 	private void getAllInWindow(Object response){
 		JsonObject stringResponse = gson.fromJson(response.toString(), JsonObject.class);
@@ -196,6 +232,13 @@ public class TabManager implements Observer{
 			//TODO: Return Tab Objects as a List.
 		}
 		
+	}
+	
+	public void clearData(){
+		JsonObject json = new JsonObject();
+		json.addProperty("request", "clearData");
+		String jsonOutput = gson.toJson(json);
+		sendMessage(jsonOutput);
 	}
 	
 	public void sleep(int i) {
@@ -230,8 +273,10 @@ public class TabManager implements Observer{
 
 		if(response.equals("newTab")){
 			newTab(msg);
-		} else {
-			
+		} else if (response.equals("getTab")) {
+			getTab(msg);
+		}
+		else {
 			if(response.equals("getAllInWindow")){
 				getAllInWindow(msg);
 			} else if (response.equals("switchTo")){
@@ -242,4 +287,5 @@ public class TabManager implements Observer{
 			
 		}
 	}
+
 }
