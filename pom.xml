@@ -1,8 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>websockets</groupId>
-  <artifactId>websockets</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <groupId>me.gerryfletcher.tabmanager</groupId>
+  <artifactId>chrome-tab-manager</artifactId>
+  <version>0.0.9</version>
   <build>
     <sourceDirectory>src</sourceDirectory>
     <defaultGoal>clean package</defaultGoal>
@@ -36,6 +36,13 @@
       <artifactId>gson</artifactId>
       <version>2.8.0</version>
     </dependency>
+    
+  <dependency>
+  <groupId>com.google.googlejavaformat</groupId>
+  <artifactId>google-java-format</artifactId>
+  <version>1.3</version>
+</dependency>
+    
   </dependencies>
   
 </project>
